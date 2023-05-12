@@ -22,6 +22,6 @@ admin.site.header = 'Backend'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include("practice.urls"))
+    path('', include("FlowerShop.urls"))
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
