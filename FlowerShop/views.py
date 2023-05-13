@@ -28,5 +28,4 @@ class OrderAPIView(generics.ListAPIView):
 
 class OrderCreateAPIView(generics.CreateAPIView):
     serializer_class = CreateOrderSerializer
-    permission_classes = (IsAdminUser,)
 
