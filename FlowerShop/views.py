@@ -10,7 +10,7 @@ from .serializers import ProductSerializer, CategorySerializer, OrderSerializer,
 
 
 class ProductAPIView(generics.ListAPIView):
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     filterset_fields = ('category',)
     serializer_class = ProductSerializer
     queryset = Product.objects.select_related("category")
