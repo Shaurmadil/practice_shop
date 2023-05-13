@@ -4,7 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAdminUser
 from .models import Product, Category, Order, OrderItem
 from .serializers import ProductSerializer, CategorySerializer, OrderSerializer, CreateOrderSerializer
-
+from rest_framework.filters import SearchFilter, OrderingFilter
 
 # Create your views here.
 
