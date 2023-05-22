@@ -1,19 +1,19 @@
 from django.shortcuts import render
 from rest_framework import generics
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, AllowAny
 from .models import Product, Category, Order, OrderItem
 from .serializers import ProductSerializer, CategorySerializer, OrderSerializer, CreateOrderSerializer
-from rest_framework.filters import SearchFilter, OrderingFilter
+
 
 # Create your views here.
 
 
 class ProductAPIView(generics.ListAPIView):
-    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+    filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('category',)
     serializer_class = ProductSerializer
-    queryset = Product.objects.select_related("category")
+    queryset = Product.objects.prefetch_related("category")
 
 
 class CategoryAPIView(generics.ListAPIView):
@@ -28,4 +28,4 @@ class OrderAPIView(generics.ListAPIView):
 
 class OrderCreateAPIView(generics.CreateAPIView):
     serializer_class = CreateOrderSerializer
-
+    permission_classes = (AllowAny,)
