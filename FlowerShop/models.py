@@ -1,31 +1,46 @@
-from django.shortcuts import render
-from rest_framework import generics
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import IsAdminUser, AllowAny
-from .models import Product, Category, Order, OrderItem
-from .serializers import ProductSerializer, CategorySerializer, OrderSerializer, CreateOrderSerializer
+from django.db import models
 
 
-# Create your views here.
+# Create your models here.
+
+class Category(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def str(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Categories"
 
 
-class ProductAPIView(generics.ListAPIView):
-    filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('category',)
-    serializer_class = ProductSerializer
-    queryset = Product.objects.prefetch_related("category")
+class Product(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    description = models.CharField(max_length=200)
+    price = models.PositiveIntegerField()
+    amount = models.PositiveIntegerField()
+    photo = models.ImageField(upload_to='photos/%Y/%m/%d/', blank="True")
+    category = models.ManyToManyField(Category, related_name="product", null=True)
+
+    def str(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Products"
 
 
-class CategoryAPIView(generics.ListAPIView):
-    serializer_class = CategorySerializer
-    queryset = Category.objects.all()
+class Order(models.Model):
+    name = models.CharField(max_length=20)
+    email = models.EmailField(max_length=20, unique=True)
+    phone = models.CharField(max_length=10)
+
+    def str(self):
+        return self.email
+
+    class Meta:
+        verbose_name_plural = "Orders"
 
 
-class OrderAPIView(generics.ListAPIView):
-    serializer_class = OrderSerializer
-    queryset = Order.objects.prefetch_related("order_item")
-
-
-class OrderCreateAPIView(generics.CreateAPIView):
-    serializer_class = CreateOrderSerializer
-    permission_classes = (AllowAny,)
+class OrderItem(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="order_item")
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="order_item")
+    amount = models.PositiveIntegerField()
