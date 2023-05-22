@@ -1,5 +1,10 @@
+import rest_framework.status
+from django.db import transaction, IntegrityError
+from django.http import HttpResponse
+
 from .models import Product, Category, Order, OrderItem
-from rest_framework import serializers
+from rest_framework import serializers, status
+from django.core.exceptions import ValidationError
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -46,8 +51,21 @@ class CreateOrderSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         order_item_data = validated_data.pop("order_item")
         order = Order.objects.create(**validated_data)
+        order_items = [OrderItem(order=order, **item) for item in order_item_data]
+        product_ids = [item['product'].id for item in order_item_data]
+        products = Product.objects.filter(id__in=product_ids)
+        try:
+            with transaction.atomic():
+                for product, item in zip(products, order_item_data):
+                    product.amount -= item['amount']
 
-        for item in order_item_data:
-            OrderItem.objects.create(order=order, **item)
+                Product.objects.bulk_update(products, ['amount'])
+                OrderItem.objects.bulk_create(order_items)
+
+        except IntegrityError:
+            raise ValidationError(
+                "requested amount bigger than available",
+                code=status.HTTP_406_NOT_ACCEPTABLE
+            )
 
         return order
